@@ -555,5 +555,122 @@ renderFounders();
 renderFaq();
 updateCartCount();
 initScroll();
+/* ---------- custom dopamine cursor ---------- */
+function initCustomCursor() {
+  if (!window.matchMedia("(pointer: fine)").matches) return;
+
+  const cursor = $("#customCursor");
+  const dot = $("#cursorDot");
+  const ring = $("#cursorRing");
+  const label = $("#cursorLabel");
+  if (!cursor || !dot || !ring) return;
+
+  document.body.classList.add("has-custom-cursor");
+
+  let mouseX = -100, mouseY = -100;
+  let ringX = -100, ringY = -100;
+
+  window.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.classList.remove("cursor-hidden");
+
+    // Immediate positioning for precision dot
+    dot.style.left = `${mouseX}px`;
+    dot.style.top = `${mouseY}px`;
+  }, { passive: true });
+
+  // Smooth lerp loop for organic follower ring
+  function renderCursor() {
+    ringX += (mouseX - ringX) * 0.22;
+    ringY += (mouseY - ringY) * 0.22;
+
+    ring.style.left = `${ringX.toFixed(1)}px`;
+    ring.style.top = `${ringY.toFixed(1)}px`;
+
+    requestAnimationFrame(renderCursor);
+  }
+  requestAnimationFrame(renderCursor);
+
+  // Hover detection with contextual dopamine badges
+  document.addEventListener("mouseover", (e) => {
+    const t = e.target;
+    cursor.classList.remove("cursor-hidden", "hovering", "hover-view", "hover-buy", "hover-action", "cursor-text");
+    label.textContent = "";
+
+    const isInput = t.closest("input, textarea");
+    if (isInput) {
+      cursor.classList.add("cursor-text");
+      return;
+    }
+
+    const buyBtn = t.closest("[data-add], [data-plan], [data-buynow], #priceBundle, #checkoutBtn");
+    if (buyBtn) {
+      cursor.classList.add("hovering", "hover-buy");
+      label.textContent = "BUILD ⚡";
+      return;
+    }
+
+    const wishBtn = t.closest("[data-wish]");
+    if (wishBtn) {
+      cursor.classList.add("hovering", "hover-action");
+      label.textContent = "SAVE";
+      return;
+    }
+
+    const courseCard = t.closest(".course, .q-opt, .project, .yt-card");
+    if (courseCard && !t.closest("button, a")) {
+      cursor.classList.add("hovering", "hover-view");
+      label.textContent = courseCard.classList.contains("course") ? "VIEW 🚀" : "EXPLORE";
+      return;
+    }
+
+    const clickable = t.closest("a, button, .tab, .acc-q, .link, [role='button'], summary");
+    if (clickable) {
+      cursor.classList.add("hovering", "hover-action");
+      label.textContent = "";
+      return;
+    }
+  });
+
+  document.addEventListener("mouseout", (e) => {
+    if (!e.relatedTarget) {
+      cursor.classList.add("cursor-hidden");
+    }
+  });
+
+  // Tactile mousedown bounce + micro sparks
+  window.addEventListener("mousedown", (e) => {
+    cursor.classList.add("is-down");
+    createSparks(e.clientX, e.clientY);
+  });
+
+  window.addEventListener("mouseup", () => {
+    cursor.classList.remove("is-down");
+  });
+
+  // Micro spark particles for click satisfaction
+  const sparkColors = ["#ffd644", "#7b5cfa", "#3d6bff", "#1fae6b", "#ff5a5f"];
+  function createSparks(x, y) {
+    const count = 4;
+    for (let i = 0; i < count; i++) {
+      const spark = document.createElement("div");
+      spark.className = "cursor-spark";
+      const angle = (i * (360 / count) + Math.random() * 20) * (Math.PI / 180);
+      const dist = 22 + Math.random() * 12;
+      spark.style.left = `${x}px`;
+      spark.style.top = `${y}px`;
+      spark.style.setProperty("--tx", `${Math.cos(angle) * dist}px`);
+      spark.style.setProperty("--ty", `${Math.sin(angle) * dist}px`);
+      spark.style.setProperty("--rot", `${(Math.random() - 0.5) * 180}deg`);
+      spark.style.background = sparkColors[i % sparkColors.length];
+      document.body.appendChild(spark);
+      setTimeout(() => spark.remove(), 450);
+    }
+  }
+}
+
+// Boot me run karne ke liye:
 initCustomCursor();
+
 
