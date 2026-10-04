@@ -555,3 +555,5 @@ renderFounders();
 renderFaq();
 updateCartCount();
 initScroll();
+initCustomCursor();
+
